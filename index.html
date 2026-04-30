@@ -57,6 +57,31 @@ img { display: block; max-width: 100%; }
   transition: border-color .2s;
 }
 .login-field input:focus { border-color: #07c160; }
+.login-input-row { display: flex; gap: 8px; align-items: stretch; }
+.login-input-row input { flex: 1; }
+.dice-btn {
+  width: 44px; flex-shrink: 0;
+  border: 1px solid #e5e5e5;
+  background: #f7f7f7;
+  border-radius: 6px;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #555;
+}
+.dice-btn:active { background: #e5e5e5; }
+.login-field select {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 16px;
+  background: #fff;
+  outline: none;
+  margin-bottom: 8px;
+}
+.login-field select:focus { border-color: #07c160; }
+.login-field-hint { font-size: 11px; color: #aaa; margin-top: 4px; }
 .login-btn {
   width: 100%; padding: 13px;
   background: #07c160; color: #fff;
@@ -209,6 +234,33 @@ img { display: block; max-width: 100%; }
 .msg-row.system { justify-content: center; }
 .msg-row.system .msg-avatar { display: none; }
 .msg-row.system .msg-content { margin: 0; max-width: 80%; }
+
+/* 群聊房间置顶说明卡片 */
+.room-tip {
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #594300;
+  position: relative;
+}
+.room-tip-title {
+  font-weight: 600; font-size: 13px;
+  color: #ad6800; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 4px;
+}
+.room-tip ul { margin: 4px 0 0; padding-left: 18px; }
+.room-tip li { margin: 2px 0; }
+.room-tip-close {
+  position: absolute; top: 6px; right: 8px;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #ad6800; cursor: pointer;
+  background: transparent;
+}
 
 /* 底部输入栏 */
 .input-bar {
@@ -380,11 +432,22 @@ img { display: block; max-width: 100%; }
     <div class="login-card">
       <div class="login-field">
         <label>昵称</label>
-        <input id="nicknameInput" type="text" maxlength="16" placeholder="请输入昵称" />
+        <div class="login-input-row">
+          <input id="nicknameInput" type="text" maxlength="16" placeholder="请输入昵称" />
+          <button type="button" class="dice-btn" id="randomNickBtn" title="随机生成昵称">🎲</button>
+        </div>
+      </div>
+      <div class="login-field" id="channelSelectField" style="display:none;">
+        <label>历史频道（点击切换）</label>
+        <select id="channelSelect"></select>
       </div>
       <div class="login-field">
-        <label>邀请码（6位，相同邀请码进入同一房间）</label>
-        <input id="roomInput" type="text" maxlength="6" placeholder="例如 a8k2xq" autocapitalize="off" autocorrect="off" />
+        <label>频道（4-32 位字母或数字，相同频道进入同一房间）</label>
+        <div class="login-input-row">
+          <input id="roomInput" type="text" maxlength="32" placeholder="例如 a8k2xq 或留空随机生成" autocapitalize="off" autocorrect="off" />
+          <button type="button" class="dice-btn" id="randomRoomBtn" title="随机生成 12 位频道">🎲</button>
+        </div>
+        <div class="login-field-hint">分享相同频道号即可一起加密聊天</div>
       </div>
       <button class="login-btn" id="loginBtn">进入聊天室</button>
       <div class="login-tip">
@@ -410,6 +473,7 @@ img { display: block; max-width: 100%; }
       <div class="chat-header">
         <button class="back-btn" id="backBtn">‹</button>
         <div class="chat-title" id="chatTitle">选择一个会话</div>
+        <button class="chat-action" id="shareBtn" title="分享当前频道">🔗</button>
         <button class="chat-action" id="callBtn" title="发起语音通话">📞</button>
       </div>
       <div class="msg-list" id="msgList"></div>
@@ -505,7 +569,7 @@ function b642buf(b64) {
   return arr.buffer;
 }
 
-// ---------- 加密：群聊用邀请码 PBKDF2 派生 AES-GCM ----------
+// ---------- 加密：群聊用频道码 PBKDF2 派生 AES-GCM ----------
 async function deriveRoomKey(roomCode) {
   const baseKey = await crypto.subtle.importKey(
     'raw', enc.encode(roomCode),
@@ -1135,11 +1199,30 @@ function openConv(convId) {
   scrollToBottom();
 }
 
+function buildRoomTip() {
+  const wrap = document.createElement('div');
+  wrap.className = 'room-tip';
+  wrap.innerHTML = `
+    <div class="room-tip-title">📌 使用说明</div>
+    <div><b>群聊房间</b>：当前频道下所有人都能看到的加密公共聊天，使用频道码派生的密钥对消息加密。</div>
+    <div style="margin-top:6px;"><b>左侧列表里的其他人</b>：点击任一在线用户即可进入端到端加密的<b>1 对 1 私聊</b>，密钥通过 ECDH 协商，仅你和对方能解密。</div>
+    <ul>
+      <li>分享当前频道：点击右上角 🔗 复制链接</li>
+      <li>语音通话：点击 📞 发起，群通话或私聊通话</li>
+      <li>所有消息端到端加密，服务端不存储任何聊天记录</li>
+    </ul>
+  `;
+  return wrap;
+}
+
 function renderMsgList() {
   const conv = State.conversations.get(State.activeConv);
   const box = $('msgList');
   box.innerHTML = '';
   if (!conv) return;
+  if (conv.type === 'group') {
+    box.appendChild(buildRoomTip());
+  }
   let lastTs = 0;
   for (const m of conv.messages) {
     if (m.ts - lastTs > 5 * 60 * 1000) {
@@ -1286,10 +1369,105 @@ async function compressImage(file, maxBytes = 1024 * 1024) {
   });
 }
 
+// ---------- 本地存储 / 随机生成 ----------
+const LS_KEYS = { nick: 'wl_nickname', channels: 'wl_channels' };
+const ALNUM = 'abcdefghijklmnopqrstuvwxyz0123456789';
+function randomAlnum(len) {
+  const arr = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  let s = '';
+  for (let i = 0; i < len; i++) s += ALNUM[arr[i] % ALNUM.length];
+  return s;
+}
+function randomNickname() {
+  const adjs = ['神秘','匿名','加密','隐形','无声','低调','极速','幽灵','流浪','寂静','闪电','深蓝','银河','月光','风行'];
+  const nouns = ['旅人','信使','观察者','低语','信号','节点','星辰','码农','客人','侦察兵','飞鸟','潜行者'];
+  return adjs[Math.floor(Math.random()*adjs.length)] + nouns[Math.floor(Math.random()*nouns.length)] + randomAlnum(3);
+}
+function loadStoredChannels() {
+  try {
+    const raw = localStorage.getItem(LS_KEYS.channels);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter(c => /^[A-Za-z0-9]{4,32}$/.test(c)) : [];
+  } catch (_) { return []; }
+}
+function saveChannel(channel) {
+  const list = loadStoredChannels().filter(c => c !== channel);
+  list.unshift(channel);
+  while (list.length > 20) list.pop();
+  try { localStorage.setItem(LS_KEYS.channels, JSON.stringify(list)); } catch (_) {}
+}
+function getUrlChannel() {
+  try {
+    const u = new URL(location.href);
+    const c = u.searchParams.get('c') || u.searchParams.get('channel');
+    return (c && /^[A-Za-z0-9]{4,32}$/.test(c)) ? c : '';
+  } catch (_) { return ''; }
+}
+function buildShareUrl(channel) {
+  const u = new URL(location.href);
+  u.searchParams.set('c', channel);
+  u.hash = '';
+  return u.toString();
+}
+async function shareChannel() {
+  if (!State.roomId) return;
+  const url = buildShareUrl(State.roomId);
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'WhisperLink 频道', text: '加入加密频道 #' + State.roomId, url });
+      return;
+    }
+  } catch (_) { /* fallthrough */ }
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('频道链接已复制');
+  } catch (_) {
+    prompt('复制以下链接分享给好友：', url);
+  }
+}
+function prefillLogin() {
+  // 昵称
+  try {
+    const nick = localStorage.getItem(LS_KEYS.nick);
+    if (nick) $('nicknameInput').value = nick;
+  } catch (_) {}
+  // 频道下拉
+  const channels = loadStoredChannels();
+  const sel = $('channelSelect');
+  if (channels.length > 0) {
+    $('channelSelectField').style.display = '';
+    sel.innerHTML = '';
+    for (const c of channels) {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      sel.appendChild(o);
+    }
+    sel.value = channels[0];
+    sel.addEventListener('change', () => { $('roomInput').value = sel.value; });
+  }
+  // 频道：URL 优先，其次历史最新
+  const urlCh = getUrlChannel();
+  if (urlCh) {
+    $('roomInput').value = urlCh;
+    if (channels.includes(urlCh)) sel.value = urlCh;
+  } else if (channels.length > 0) {
+    $('roomInput').value = channels[0];
+  }
+}
+
 // ---------- 事件绑定 ----------
 function bindEvents() {
   $('loginBtn').addEventListener('click', doLogin);
   $('roomInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') doLogin(); });
+  $('randomNickBtn').addEventListener('click', () => {
+    $('nicknameInput').value = randomNickname();
+  });
+  $('randomRoomBtn').addEventListener('click', () => {
+    $('roomInput').value = randomAlnum(12);
+  });
+  $('shareBtn').addEventListener('click', shareChannel);
 
   $('backBtn').addEventListener('click', () => {
     $('mainPage').classList.remove('show-chat');
@@ -1357,7 +1535,7 @@ async function doLogin() {
   const nickname = $('nicknameInput').value.trim();
   const room = $('roomInput').value.trim();
   if (!nickname) { showToast('请输入昵称'); return; }
-  if (!/^[A-Za-z0-9]{6}$/.test(room)) { showToast('邀请码必须是 6 位字母或数字'); return; }
+  if (!/^[A-Za-z0-9]{4,32}$/.test(room)) { showToast('频道必须是 4-32 位字母或数字'); return; }
   $('loginBtn').disabled = true;
   try {
     State.nickname = nickname;
@@ -1365,6 +1543,11 @@ async function doLogin() {
     State.roomKey = await deriveRoomKey(room);
     State.ecdhKeyPair = await genECDHKeyPair();
     State.pubKeyB64 = await exportPubKey(State.ecdhKeyPair);
+    // 持久化（只有真正进入过的频道才写入）
+    try {
+      localStorage.setItem(LS_KEYS.nick, nickname);
+      saveChannel(room);
+    } catch (_) {}
     $('loginPage').style.display = 'none';
     $('mainPage').style.display = 'flex';
     $('roomTag').textContent = '#' + room;
@@ -1380,6 +1563,7 @@ async function doLogin() {
 
 // ---------- 启动 ----------
 bindEvents();
+prefillLogin();
 
 // 防止移动端键盘弹起后视图错位
 window.addEventListener('resize', () => {
