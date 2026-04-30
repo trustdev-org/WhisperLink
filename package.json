@@ -12,6 +12,6 @@
   "dependencies": {
     "express": "^4.19.2",
     "ws": "^8.17.0",
-    "node-turn": "^0.0.18"
+    "node-turn": "^0.0.6"
   }
 }
