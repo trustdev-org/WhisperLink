@@ -4,6 +4,8 @@
 
 零注册、零存储、纯密文转发。打开页面输入昵称和 6 位邀请码即可进入加密房间，所有消息在浏览器侧用 Web Crypto API 加密后再发出，服务端只看到密文。
 
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/trustdev-org/WhisperLink)
+
 ---
 
 ## ✨ 功能特性
