@@ -1,0 +1,17 @@
+{
+  "name": "whisperlink",
+  "version": "1.0.0",
+  "description": "私有加密即时通讯应用 - 端到端加密 + 群聊 + 私聊 + 语音通话",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.17.0",
+    "node-turn": "^0.0.18"
+  }
+}

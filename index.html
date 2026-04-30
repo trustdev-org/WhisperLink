@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="format-detection" content="telephone=no" />
+<title>WhisperLink</title>
+<style>
+/* ============= 全局样式：微信移动端风格 ============= */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0;
+  height: 100%; width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  color: #191919;
+  background: #ededed;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+input, textarea { -webkit-user-select: text; user-select: text; }
+button { border: none; background: none; font: inherit; color: inherit; cursor: pointer; padding: 0; }
+img { display: block; max-width: 100%; }
+
+#app { height: 100%; width: 100%; position: relative; overflow: hidden; }
+
+/* ============= 登录页 ============= */
+.login-page {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, #07c160 0%, #06ad56 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px;
+  z-index: 10;
+}
+.login-logo {
+  width: 88px; height: 88px; border-radius: 22px;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44px; color: #fff; margin-bottom: 18px;
+  backdrop-filter: blur(10px);
+}
+.login-title { color: #fff; font-size: 28px; font-weight: 600; margin: 0 0 6px; }
+.login-subtitle { color: rgba(255,255,255,0.85); font-size: 14px; margin-bottom: 36px; }
+.login-card {
+  width: 100%; max-width: 360px;
+  background: #fff; border-radius: 14px; padding: 22px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; }
+.login-field input {
+  width: 100%; padding: 12px 14px;
+  border: 1px solid #e5e5e5; border-radius: 8px;
+  font-size: 16px; outline: none;
+  transition: border-color .2s;
+}
+.login-field input:focus { border-color: #07c160; }
+.login-btn {
+  width: 100%; padding: 13px;
+  background: #07c160; color: #fff;
+  border-radius: 8px; font-size: 16px; font-weight: 500;
+  transition: opacity .2s;
+}
+.login-btn:active { opacity: .8; }
+.login-btn:disabled { opacity: .5; }
+.login-tip { margin-top: 14px; font-size: 12px; color: #999; text-align: center; line-height: 1.6; }
+
+/* ============= 主界面 ============= */
+.main {
+  position: absolute; inset: 0;
+  display: flex;
+  background: #ededed;
+}
+/* 左侧会话列表 */
+.sidebar {
+  width: 100%;
+  max-width: 100%;
+  background: #fff;
+  display: flex; flex-direction: column;
+  border-right: 1px solid #e5e5e5;
+}
+.sidebar-header {
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px;
+  background: #ededed;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.sidebar-header h1 { font-size: 17px; font-weight: 600; margin: 0; }
+.sidebar-header .room-tag {
+  font-size: 12px; color: #888;
+  background: #f5f5f5; padding: 3px 8px; border-radius: 4px;
+}
+.conv-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.conv-item {
+  display: flex; align-items: center; padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
+  transition: background .15s;
+}
+.conv-item:active { background: #f5f5f5; }
+.conv-item.active { background: #ececec; }
+.conv-avatar {
+  width: 44px; height: 44px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 18px; font-weight: 500;
+  margin-right: 12px; flex-shrink: 0;
+  position: relative;
+}
+.conv-info { flex: 1; min-width: 0; }
+.conv-name { font-size: 16px; font-weight: 500; color: #191919; margin-bottom: 4px; }
+.conv-preview { font-size: 13px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.conv-time { font-size: 11px; color: #b2b2b2; }
+.unread-dot {
+  background: #fa5151; color: #fff;
+  font-size: 11px; min-width: 18px; height: 18px;
+  border-radius: 9px; padding: 0 5px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* 右侧聊天区 */
+.chat {
+  flex: 1;
+  display: flex; flex-direction: column;
+  background: #ededed;
+  position: relative;
+}
+.chat-header {
+  display: flex; align-items: center;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px 10px;
+  background: #ededed;
+  border-bottom: 1px solid #d8d8d8;
+  position: relative;
+  z-index: 5;
+}
+.back-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #191919;
+  margin-right: 4px;
+}
+.chat-title { flex: 1; text-align: center; font-size: 17px; font-weight: 600; }
+.chat-action {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: #191919;
+}
+
+/* 消息区 */
+.msg-list {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 12px 12px 4px;
+}
+.msg-time {
+  text-align: center; font-size: 11px; color: #b2b2b2;
+  margin: 12px 0;
+}
+.msg-row {
+  display: flex; margin-bottom: 14px;
+  align-items: flex-start;
+}
+.msg-row.self { flex-direction: row-reverse; }
+.msg-avatar {
+  width: 38px; height: 38px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 15px; font-weight: 500;
+  flex-shrink: 0;
+}
+.msg-content {
+  max-width: 70%;
+  margin: 0 8px;
+}
+.msg-nickname {
+  font-size: 11px; color: #888;
+  margin-bottom: 4px; padding: 0 2px;
+}
+.msg-row.self .msg-nickname { text-align: right; display: none; }
+.msg-bubble {
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 15px; line-height: 1.45;
+  word-break: break-word;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 1px 0.5px rgba(0,0,0,0.05);
+}
+.msg-row.self .msg-bubble {
+  background: #95ec69;
+  color: #191919;
+}
+.msg-bubble.image-bubble {
+  padding: 3px;
+  background: transparent !important;
+  box-shadow: none;
+}
+.msg-bubble.image-bubble img {
+  max-width: 200px; max-height: 260px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.msg-bubble.system {
+  background: rgba(0,0,0,0.06); color: #888;
+  font-size: 12px; padding: 4px 10px;
+  border-radius: 4px; text-align: center;
+  margin: 0 auto;
+}
+.msg-row.system { justify-content: center; }
+.msg-row.system .msg-avatar { display: none; }
+.msg-row.system .msg-content { margin: 0; max-width: 80%; }
+
+/* 底部输入栏 */
+.input-bar {
+  background: #f7f7f7;
+  border-top: 1px solid #d8d8d8;
+  padding: 8px 8px calc(env(safe-area-inset-bottom, 0px) + 8px);
+  display: flex; align-items: flex-end; gap: 8px;
+}
+.input-bar textarea {
+  flex: 1;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 16px;
+  resize: none;
+  background: #fff;
+  outline: none;
+  min-height: 36px;
+  max-height: 120px;
+  line-height: 1.4;
+  font-family: inherit;
+}
+.input-icon-btn {
+  width: 36px; height: 36px; border-radius: 6px;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #555;
+  flex-shrink: 0;
+}
+.input-icon-btn:active { background: #e0e0e0; }
+.send-btn {
+  background: #07c160; color: #fff;
+  padding: 8px 16px; border-radius: 6px;
+  font-size: 14px; font-weight: 500;
+  flex-shrink: 0; height: 36px;
+}
+.send-btn:disabled { background: #bbb; }
+
+/* 空状态 */
+.empty-chat {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: #b2b2b2; font-size: 14px;
+  text-align: center; padding: 24px;
+}
+.empty-chat .icon { font-size: 48px; margin-bottom: 12px; opacity: .4; }
+
+/* 图片预览 */
+.image-viewer {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.95);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.image-viewer img { max-width: 100%; max-height: 100%; }
+
+/* 通话悬浮窗 */
+.call-float {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 60px);
+  right: 12px;
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  z-index: 800;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px);
+}
+.call-float .title { font-size: 13px; margin-bottom: 6px; opacity: .8; }
+.call-float .status { font-size: 14px; font-weight: 500; margin-bottom: 10px; }
+.call-float .members { font-size: 12px; opacity: .8; margin-bottom: 10px; max-height: 60px; overflow-y: auto; }
+.call-float .actions { display: flex; gap: 8px; }
+.call-btn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.call-btn.mic-on { background: rgba(255,255,255,0.15); color: #fff; }
+.call-btn.mic-off { background: #fa5151; color: #fff; }
+.call-btn.hangup { background: #fa5151; color: #fff; }
+
+/* 来电邀请弹窗 */
+.call-invite {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+  display: flex; align-items: center; justify-content: center;
+}
+.call-invite-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  width: 80%; max-width: 320px;
+  text-align: center;
+}
+.call-invite-card h3 { margin: 0 0 8px; font-size: 18px; }
+.call-invite-card p { color: #888; margin: 0 0 20px; font-size: 14px; }
+.call-invite-card .btns { display: flex; gap: 12px; }
+.call-invite-card button { flex: 1; padding: 11px; border-radius: 8px; font-size: 15px; }
+.btn-reject { background: #f0f0f0; color: #191919; }
+.btn-accept { background: #07c160; color: #fff; }
+
+/* 加载提示 */
+.toast {
+  position: fixed; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.8); color: #fff;
+  padding: 10px 18px; border-radius: 8px;
+  font-size: 14px; z-index: 1100;
+  pointer-events: none;
+  opacity: 0; transition: opacity .2s;
+}
+.toast.show { opacity: 1; }
+
+/* 连接状态条 */
+.conn-status {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: #fa5151; color: #fff;
+  font-size: 12px; text-align: center;
+  padding: 4px;
+  z-index: 1200;
+  transform: translateY(-100%);
+  transition: transform .25s;
+}
+.conn-status.show { transform: translateY(0); }
+
+/* ============= 桌面端布局 ============= */
+@media (min-width: 768px) {
+  .sidebar { max-width: 320px; }
+  .main { flex-direction: row; }
+  .back-btn { display: none; }
+  .chat { display: flex !important; }
+}
+
+/* ============= 移动端：左右切换 ============= */
+@media (max-width: 767px) {
+  .main.show-chat .sidebar { display: none; }
+  .main:not(.show-chat) .chat { display: none; }
+}
+
+/* 隐藏滚动条 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+
+/* 头像颜色 */
+.avatar-c0 { background: #fa5151; }
+.avatar-c1 { background: #ff8f1f; }
+.avatar-c2 { background: #ffc300; }
+.avatar-c3 { background: #07c160; }
+.avatar-c4 { background: #10aeff; }
+.avatar-c5 { background: #6467f0; }
+.avatar-c6 { background: #b620e0; }
+.avatar-c7 { background: #ee5a87; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 登录页 -->
+  <div class="login-page" id="loginPage">
+    <div class="login-logo">💬</div>
+    <h1 class="login-title">WhisperLink</h1>
+    <div class="login-subtitle">端到端加密 · 私密通讯</div>
+    <div class="login-card">
+      <div class="login-field">
+        <label>昵称</label>
+        <input id="nicknameInput" type="text" maxlength="16" placeholder="请输入昵称" />
+      </div>
+      <div class="login-field">
+        <label>邀请码（6位，相同邀请码进入同一房间）</label>
+        <input id="roomInput" type="text" maxlength="6" placeholder="例如 a8k2xq" autocapitalize="off" autocorrect="off" />
+      </div>
+      <button class="login-btn" id="loginBtn">进入聊天室</button>
+      <div class="login-tip">
+        所有消息端到端加密<br/>
+        服务端不存储任何聊天记录
+      </div>
+    </div>
+  </div>
+
+  <!-- 主界面 -->
+  <div class="main" id="mainPage" style="display:none;">
+    <!-- 侧边栏：会话列表 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h1 id="sidebarTitle">聊天</h1>
+        <span class="room-tag" id="roomTag"></span>
+      </div>
+      <div class="conv-list" id="convList"></div>
+    </div>
+
+    <!-- 聊天区 -->
+    <div class="chat" id="chatArea">
+      <div class="chat-header">
+        <button class="back-btn" id="backBtn">‹</button>
+        <div class="chat-title" id="chatTitle">选择一个会话</div>
+        <button class="chat-action" id="callBtn" title="发起语音通话">📞</button>
+      </div>
+      <div class="msg-list" id="msgList"></div>
+      <div class="input-bar">
+        <button class="input-icon-btn" id="imageBtn" title="发送图片">📷</button>
+        <input type="file" id="imageInput" accept="image/*" style="display:none" />
+        <textarea id="msgInput" rows="1" placeholder="输入消息..."></textarea>
+        <button class="send-btn" id="sendBtn">发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 通话悬浮窗 -->
+  <div class="call-float" id="callFloat" style="display:none;">
+    <div class="title" id="callTitle">语音通话</div>
+    <div class="status" id="callStatus">连接中...</div>
+    <div class="members" id="callMembers"></div>
+    <div class="actions">
+      <button class="call-btn mic-on" id="micBtn">🎤 静音</button>
+      <button class="call-btn hangup" id="hangupBtn">📴 挂断</button>
+    </div>
+  </div>
+
+  <!-- 来电邀请 -->
+  <div class="call-invite" id="callInvite" style="display:none;">
+    <div class="call-invite-card">
+      <h3 id="inviteName">邀请你语音通话</h3>
+      <p id="inviteDesc">语音通话邀请</p>
+      <div class="btns">
+        <button class="btn-reject" id="rejectBtn">拒绝</button>
+        <button class="btn-accept" id="acceptBtn">接听</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 图片预览 -->
+  <div class="image-viewer" id="imageViewer" style="display:none;">
+    <img id="viewerImg" alt="" />
+  </div>
+
+  <!-- 连接状态条 -->
+  <div class="conn-status" id="connStatus">连接断开，正在重连...</div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* =====================================================
+ * WhisperLink 前端
+ * 功能：端到端加密群聊 + 私聊 + WebRTC 语音通话
+ * ===================================================== */
+
+// ---------- 工具 ----------
+const $ = (id) => document.getElementById(id);
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+
+function uuid() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+function showToast(msg, ms = 1800) {
+  const t = $('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+// 头像颜色：基于昵称首字符
+function avatarOf(name) {
+  const ch = (name || '?').trim().charAt(0).toUpperCase() || '?';
+  let hash = 0;
+  for (let i = 0; i < (name || '').length; i++) hash = (hash * 31 + (name || '').charCodeAt(i)) & 0xffffffff;
+  const colorIdx = Math.abs(hash) % 8;
+  return { ch, color: 'avatar-c' + colorIdx };
+}
+
+function buf2b64(buf) {
+  const bytes = new Uint8Array(buf);
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s);
+}
+function b642buf(b64) {
+  const s = atob(b64);
+  const arr = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) arr[i] = s.charCodeAt(i);
+  return arr.buffer;
+}
+
+// ---------- 加密：群聊用邀请码 PBKDF2 派生 AES-GCM ----------
+async function deriveRoomKey(roomCode) {
+  const baseKey = await crypto.subtle.importKey(
+    'raw', enc.encode(roomCode),
+    { name: 'PBKDF2' }, false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: enc.encode('WhisperLink-Salt-v1:' + roomCode),
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function aesEncrypt(key, plaintext) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    enc.encode(plaintext)
+  );
+  return { iv: buf2b64(iv), ciphertext: buf2b64(ct) };
+}
+async function aesDecrypt(key, ivB64, ctB64) {
+  const iv = new Uint8Array(b642buf(ivB64));
+  const pt = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    b642buf(ctB64)
+  );
+  return dec.decode(pt);
+}
+
+// ---------- 私聊：ECDH 协商密钥 ----------
+async function genECDHKeyPair() {
+  return crypto.subtle.generateKey(
+    { name: 'ECDH', namedCurve: 'P-256' },
+    true,
+    ['deriveKey']
+  );
+}
+async function exportPubKey(keyPair) {
+  const raw = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+  return buf2b64(raw);
+}
+async function importPubKey(b64) {
+  return crypto.subtle.importKey(
+    'spki', b642buf(b64),
+    { name: 'ECDH', namedCurve: 'P-256' },
+    false, []
+  );
+}
+async function deriveSharedKey(myPriv, theirPub) {
+  return crypto.subtle.deriveKey(
+    { name: 'ECDH', public: theirPub },
+    myPriv,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+// ---------- 应用状态 ----------
+const State = {
+  ws: null,
+  reconnectTimer: null,
+  roomId: null,
+  nickname: null,
+  userId: uuid(),
+  roomKey: null,                 // 群聊共享密钥 (AES-GCM)
+  ecdhKeyPair: null,             // 本机 ECDH 密钥对
+  pubKeyB64: null,               // 本机 ECDH 公钥 base64
+  privateKeys: new Map(),        // userId -> AES-GCM key (私聊)
+  pendingPrivKeyResolvers: new Map(), // userId -> [resolve...]
+  users: new Map(),              // userId -> { nickname }
+  // 会话：'group' 或 userId
+  conversations: new Map(),      // convId -> { id, type, name, messages[], unread, lastTs }
+  activeConv: null,
+  call: null, // { channel, peers: Map<userId, RTCPeerConnection>, localStream, isMuted, target? }
+  turnConfig: null,
+};
+
+// ---------- WebSocket ----------
+function connect() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const url = `${proto}//${location.host}/ws`;
+  State.ws = new WebSocket(url);
+
+  State.ws.onopen = () => {
+    $('connStatus').classList.remove('show');
+    // 加入房间
+    sendWS({
+      type: 'join',
+      roomId: State.roomId,
+      userId: State.userId,
+      nickname: State.nickname,
+    });
+    // 广播自己的 ECDH 公钥
+    sendWS({
+      type: 'webrtc_signal',
+      signal: { kind: 'ecdh_pub', pub: State.pubKeyB64 },
+      channel: 'private',
+    });
+  };
+
+  State.ws.onmessage = async (ev) => {
+    let msg;
+    try { msg = JSON.parse(ev.data); } catch (_) { return; }
+    await handleServerMessage(msg);
+  };
+
+  State.ws.onclose = () => {
+    $('connStatus').classList.add('show');
+    if (State.reconnectTimer) return;
+    State.reconnectTimer = setTimeout(() => {
+      State.reconnectTimer = null;
+      connect();
+    }, 2000);
+  };
+
+  State.ws.onerror = () => {
+    try { State.ws.close(); } catch (_) {}
+  };
+}
+
+function sendWS(payload) {
+  if (State.ws && State.ws.readyState === WebSocket.OPEN) {
+    State.ws.send(JSON.stringify(payload));
+  }
+}
+
+async function handleServerMessage(msg) {
+  switch (msg.type) {
+    case 'user_list': {
+      State.users.clear();
+      msg.users.forEach(u => {
+        if (u.userId !== State.userId) State.users.set(u.userId, { nickname: u.nickname });
+      });
+      renderConvList();
+      break;
+    }
+    case 'user_joined': {
+      State.users.set(msg.userId, { nickname: msg.nickname });
+      renderConvList();
+      // 主动把公钥再广播一次，方便新人协商
+      sendWS({
+        type: 'webrtc_signal',
+        to: msg.userId,
+        signal: { kind: 'ecdh_pub', pub: State.pubKeyB64 },
+        channel: 'private',
+      });
+      break;
+    }
+    case 'user_left': {
+      State.users.delete(msg.userId);
+      State.privateKeys.delete(msg.userId);
+      renderConvList();
+      // 通话中有人离开
+      if (State.call && State.call.peers.has(msg.userId)) {
+        const pc = State.call.peers.get(msg.userId);
+        try { pc.close(); } catch (_) {}
+        State.call.peers.delete(msg.userId);
+        updateCallUI();
+      }
+      break;
+    }
+    case 'message': {
+      // 群消息，使用 roomKey 解密
+      try {
+        const text = await aesDecrypt(State.roomKey, msg.iv, msg.ciphertext);
+        const payload = JSON.parse(text);
+        recvMessage('group', {
+          from: msg.from,
+          fromNickname: msg.fromNickname,
+          msgType: msg.msgType,
+          content: payload.content,
+          ts: msg.ts,
+        });
+      } catch (e) {
+        console.warn('解密群消息失败', e);
+      }
+      break;
+    }
+    case 'private_message': {
+      const key = State.privateKeys.get(msg.from);
+      if (!key) {
+        // 还没协商好，缓存，等待 ecdh 完成
+        console.warn('收到未协商私聊密钥的消息', msg.from);
+        return;
+      }
+      try {
+        const text = await aesDecrypt(key, msg.iv, msg.ciphertext);
+        const payload = JSON.parse(text);
+        recvMessage(msg.from, {
+          from: msg.from,
+          fromNickname: msg.fromNickname,
+          msgType: msg.msgType,
+          content: payload.content,
+          ts: msg.ts,
+        });
+      } catch (e) {
+        console.warn('解密私聊消息失败', e);
+      }
+      break;
+    }
+    case 'webrtc_signal': {
+      await handleWebRTCSignal(msg);
+      break;
+    }
+    case 'call_control': {
+      await handleCallControl(msg);
+      break;
+    }
+  }
+}
+
+// ---------- 收发消息 ----------
+function ensureConv(id, type, name) {
+  if (!State.conversations.has(id)) {
+    State.conversations.set(id, {
+      id, type, name,
+      messages: [], unread: 0, lastTs: 0,
+    });
+  }
+  return State.conversations.get(id);
+}
+
+function recvMessage(convId, m) {
+  let conv;
+  if (convId === 'group') {
+    conv = ensureConv('group', 'group', '群聊房间');
+  } else {
+    const u = State.users.get(convId);
+    conv = ensureConv(convId, 'private', u ? u.nickname : '私聊');
+  }
+  conv.messages.push(m);
+  conv.lastTs = m.ts;
+  if (State.activeConv !== conv.id) {
+    conv.unread++;
+  }
+  renderConvList();
+  if (State.activeConv === conv.id) {
+    appendMsgDom(m);
+    scrollToBottom();
+  }
+}
+
+async function sendMessage(msgType, content) {
+  const conv = State.conversations.get(State.activeConv);
+  if (!conv) return;
+  const payload = JSON.stringify({ content });
+  if (conv.type === 'group') {
+    const { iv, ciphertext } = await aesEncrypt(State.roomKey, payload);
+    sendWS({ type: 'message', msgType, iv, ciphertext });
+  } else {
+    let key = State.privateKeys.get(conv.id);
+    if (!key) {
+      // 触发 ECDH，等待
+      showToast('正在协商加密密钥...');
+      key = await waitForPrivateKey(conv.id, 5000);
+      if (!key) { showToast('对方未在线或协商失败'); return; }
+    }
+    const { iv, ciphertext } = await aesEncrypt(key, payload);
+    sendWS({ type: 'private_message', to: conv.id, msgType, iv, ciphertext });
+  }
+  // 本地回显
+  const m = {
+    from: State.userId,
+    fromNickname: State.nickname,
+    msgType, content,
+    ts: Date.now(),
+  };
+  conv.messages.push(m);
+  conv.lastTs = m.ts;
+  renderConvList();
+  appendMsgDom(m);
+  scrollToBottom();
+}
+
+function waitForPrivateKey(userId, timeoutMs) {
+  return new Promise((resolve) => {
+    if (State.privateKeys.has(userId)) return resolve(State.privateKeys.get(userId));
+    const arr = State.pendingPrivKeyResolvers.get(userId) || [];
+    arr.push(resolve);
+    State.pendingPrivKeyResolvers.set(userId, arr);
+    // 主动请求公钥
+    sendWS({
+      type: 'webrtc_signal',
+      to: userId,
+      signal: { kind: 'ecdh_request' },
+      channel: 'private',
+    });
+    setTimeout(() => resolve(null), timeoutMs);
+  });
+}
+
+// ---------- WebRTC 信令处理 ----------
+async function handleWebRTCSignal(msg) {
+  const { from, signal, channel } = msg;
+  // ECDH 公钥交换
+  if (signal.kind === 'ecdh_pub') {
+    try {
+      const theirPub = await importPubKey(signal.pub);
+      const sharedKey = await deriveSharedKey(State.ecdhKeyPair.privateKey, theirPub);
+      State.privateKeys.set(from, sharedKey);
+      // 唤醒等待者
+      const waiters = State.pendingPrivKeyResolvers.get(from);
+      if (waiters) {
+        waiters.forEach(r => r(sharedKey));
+        State.pendingPrivKeyResolvers.delete(from);
+      }
+    } catch (e) { console.warn('ECDH 失败', e); }
+    return;
+  }
+  if (signal.kind === 'ecdh_request') {
+    sendWS({
+      type: 'webrtc_signal',
+      to: from,
+      signal: { kind: 'ecdh_pub', pub: State.pubKeyB64 },
+      channel: 'private',
+    });
+    return;
+  }
+  // 通话相关
+  if (signal.kind === 'offer' || signal.kind === 'answer' || signal.kind === 'candidate') {
+    if (!State.call) {
+      // 收到 offer 但本地未在通话 -> 自动建立（已经接听过 invite）
+      // 这里要求必须先 accept 才会进入 call
+      if (signal.kind !== 'offer') return;
+      // 没有 call 上下文，忽略
+      return;
+    }
+    let pc = State.call.peers.get(from);
+    if (!pc) pc = createPeerConnection(from);
+    try {
+      if (signal.kind === 'offer') {
+        await pc.setRemoteDescription({ type: 'offer', sdp: signal.sdp });
+        const ans = await pc.createAnswer();
+        await pc.setLocalDescription(ans);
+        sendWS({
+          type: 'webrtc_signal',
+          to: from,
+          channel: State.call.channel,
+          signal: { kind: 'answer', sdp: ans.sdp },
+        });
+      } else if (signal.kind === 'answer') {
+        await pc.setRemoteDescription({ type: 'answer', sdp: signal.sdp });
+      } else if (signal.kind === 'candidate' && signal.candidate) {
+        await pc.addIceCandidate(signal.candidate);
+      }
+    } catch (e) { console.warn('信令处理失败', e); }
+  }
+}
+
+async function handleCallControl(msg) {
+  if (msg.action === 'invite') {
+    if (State.call) {
+      // 已经在通话，自动拒绝
+      sendWS({ type: 'call_control', to: msg.from, action: 'reject', channel: msg.channel });
+      return;
+    }
+    showInvite(msg);
+  } else if (msg.action === 'accept') {
+    // 对方接听，发起 offer
+    if (State.call) await initiateOfferTo(msg.from);
+  } else if (msg.action === 'reject') {
+    showToast('对方拒绝了通话');
+  } else if (msg.action === 'hangup') {
+    if (State.call && State.call.channel === 'private' && msg.from === State.call.target) {
+      endCall();
+    } else if (State.call) {
+      // 群通话有人挂断
+      const pc = State.call.peers.get(msg.from);
+      if (pc) { try { pc.close(); } catch (_) {} State.call.peers.delete(msg.from); }
+      updateCallUI();
+    }
+  }
+}
+
+// ---------- WebRTC 通话 ----------
+async function fetchTurnConfig() {
+  if (State.turnConfig) return State.turnConfig;
+  try {
+    const r = await fetch('/turn-config');
+    State.turnConfig = await r.json();
+  } catch (e) {
+    State.turnConfig = null;
+  }
+  return State.turnConfig;
+}
+
+function buildIceServers(turn) {
+  // ICE 优先 TURN（国内 NAT 穿透成功率低），同时保留 STUN 兜底
+  const list = [];
+  if (turn && turn.urls) {
+    list.push({ urls: turn.urls, username: turn.username, credential: turn.credential });
+  }
+  list.push({ urls: 'stun:stun.l.google.com:19302' });
+  return list;
+}
+
+function createPeerConnection(remoteUserId) {
+  const turn = State.turnConfig;
+  const pc = new RTCPeerConnection({
+    iceServers: buildIceServers(turn),
+    iceTransportPolicy: 'all',
+  });
+  // 加本地音轨
+  if (State.call && State.call.localStream) {
+    State.call.localStream.getTracks().forEach(t => pc.addTrack(t, State.call.localStream));
+  }
+  pc.onicecandidate = (ev) => {
+    if (ev.candidate) {
+      sendWS({
+        type: 'webrtc_signal',
+        to: remoteUserId,
+        channel: State.call ? State.call.channel : 'group',
+        signal: { kind: 'candidate', candidate: ev.candidate },
+      });
+    }
+  };
+  pc.ontrack = (ev) => {
+    let audio = document.getElementById('audio-' + remoteUserId);
+    if (!audio) {
+      audio = document.createElement('audio');
+      audio.id = 'audio-' + remoteUserId;
+      audio.autoplay = true;
+      audio.playsInline = true;
+      document.body.appendChild(audio);
+    }
+    audio.srcObject = ev.streams[0];
+  };
+  pc.onconnectionstatechange = () => {
+    if (['failed', 'disconnected', 'closed'].includes(pc.connectionState)) {
+      // 自动清理
+    }
+    updateCallUI();
+  };
+  if (State.call) State.call.peers.set(remoteUserId, pc);
+  return pc;
+}
+
+async function initiateOfferTo(remoteUserId) {
+  const pc = State.call.peers.get(remoteUserId) || createPeerConnection(remoteUserId);
+  const offer = await pc.createOffer({ offerToReceiveAudio: true });
+  await pc.setLocalDescription(offer);
+  sendWS({
+    type: 'webrtc_signal',
+    to: remoteUserId,
+    channel: State.call.channel,
+    signal: { kind: 'offer', sdp: offer.sdp },
+  });
+}
+
+async function startCall(channel, target) {
+  if (State.call) { showToast('已在通话中'); return; }
+  await fetchTurnConfig();
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch (e) {
+    showToast('无法访问麦克风：' + e.message);
+    return;
+  }
+  State.call = {
+    channel, target: target || null,
+    peers: new Map(),
+    localStream: stream,
+    isMuted: false,
+  };
+  showCallFloat();
+  // 发起通话邀请
+  const ctrl = { type: 'call_control', action: 'invite', channel };
+  if (target) ctrl.to = target;
+  sendWS(ctrl);
+  $('callStatus').textContent = '等待对方接听...';
+}
+
+function showInvite(msg) {
+  $('inviteName').textContent = (msg.fromNickname || '对方') + ' 邀请你语音通话';
+  $('inviteDesc').textContent = msg.channel === 'group' ? '群语音通话' : '一对一语音通话';
+  $('callInvite').style.display = 'flex';
+  $('callInvite')._invite = msg;
+}
+
+async function acceptInvite() {
+  const msg = $('callInvite')._invite;
+  $('callInvite').style.display = 'none';
+  if (!msg) return;
+  await fetchTurnConfig();
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch (e) {
+    showToast('无法访问麦克风：' + e.message);
+    sendWS({ type: 'call_control', to: msg.from, action: 'reject', channel: msg.channel });
+    return;
+  }
+  State.call = {
+    channel: msg.channel,
+    target: msg.channel === 'private' ? msg.from : null,
+    peers: new Map(),
+    localStream: stream,
+    isMuted: false,
+  };
+  showCallFloat();
+  $('callStatus').textContent = '通话中';
+  sendWS({ type: 'call_control', to: msg.from, action: 'accept', channel: msg.channel });
+}
+
+function rejectInvite() {
+  const msg = $('callInvite')._invite;
+  $('callInvite').style.display = 'none';
+  if (msg) sendWS({ type: 'call_control', to: msg.from, action: 'reject', channel: msg.channel });
+}
+
+function showCallFloat() {
+  $('callFloat').style.display = 'block';
+  $('callTitle').textContent = State.call.channel === 'private' ? '私聊语音' : '群语音';
+  updateCallUI();
+}
+
+function updateCallUI() {
+  if (!State.call) return;
+  const names = [];
+  State.call.peers.forEach((pc, uid) => {
+    const u = State.users.get(uid);
+    names.push((u ? u.nickname : '?') + ' (' + (pc.connectionState || 'new') + ')');
+  });
+  $('callMembers').textContent = names.length ? '在线: ' + names.join(', ') : '等待对方加入...';
+  const micBtn = $('micBtn');
+  if (State.call.isMuted) {
+    micBtn.className = 'call-btn mic-off';
+    micBtn.textContent = '🔇 已静音';
+  } else {
+    micBtn.className = 'call-btn mic-on';
+    micBtn.textContent = '🎤 静音';
+  }
+}
+
+function toggleMic() {
+  if (!State.call) return;
+  State.call.isMuted = !State.call.isMuted;
+  State.call.localStream.getAudioTracks().forEach(t => { t.enabled = !State.call.isMuted; });
+  updateCallUI();
+}
+
+function endCall() {
+  if (!State.call) return;
+  // 通知对方
+  const ctrl = { type: 'call_control', action: 'hangup', channel: State.call.channel };
+  if (State.call.target) ctrl.to = State.call.target;
+  sendWS(ctrl);
+  // 清理
+  State.call.peers.forEach(pc => { try { pc.close(); } catch (_) {} });
+  State.call.localStream.getTracks().forEach(t => t.stop());
+  document.querySelectorAll('audio[id^="audio-"]').forEach(a => a.remove());
+  State.call = null;
+  $('callFloat').style.display = 'none';
+}
+
+// ---------- UI 渲染 ----------
+function renderConvList() {
+  // 始终保证群聊会话存在
+  ensureConv('group', 'group', '群聊房间');
+  // 为每个用户准备私聊会话占位
+  State.users.forEach((u, uid) => {
+    if (!State.conversations.has(uid)) {
+      ensureConv(uid, 'private', u.nickname);
+    } else {
+      State.conversations.get(uid).name = u.nickname;
+    }
+  });
+
+  const list = $('convList');
+  // 排序：群聊置顶，其他按最后时间
+  const items = Array.from(State.conversations.values());
+  items.sort((a, b) => {
+    if (a.id === 'group') return -1;
+    if (b.id === 'group') return 1;
+    return b.lastTs - a.lastTs;
+  });
+  list.innerHTML = '';
+  for (const conv of items) {
+    if (conv.type === 'private' && !State.users.has(conv.id) && conv.messages.length === 0) {
+      continue; // 离线且无历史不显示
+    }
+    const last = conv.messages[conv.messages.length - 1];
+    const preview = last
+      ? (last.msgType === 'image' ? '[图片]' : (last.fromNickname ? last.fromNickname + ': ' : '') + (last.content || ''))
+      : (conv.id === 'group' ? '加密群聊房间' : '点击发起私聊');
+    const time = last ? formatTime(last.lastTs || last.ts) : '';
+    const av = avatarOf(conv.id === 'group' ? '群' : conv.name);
+    const isActive = State.activeConv === conv.id;
+    const div = document.createElement('div');
+    div.className = 'conv-item' + (isActive ? ' active' : '');
+    div.innerHTML = `
+      <div class="conv-avatar ${av.color}">${escapeHtml(av.ch)}</div>
+      <div class="conv-info">
+        <div class="conv-name">${escapeHtml(conv.name)}${conv.id !== 'group' && State.users.has(conv.id) ? '' : (conv.id === 'group' ? '' : ' <span style="font-size:11px;color:#bbb">(离线)</span>')}</div>
+        <div class="conv-preview">${escapeHtml(preview).slice(0, 40)}</div>
+      </div>
+      <div class="conv-meta">
+        <div class="conv-time">${time}</div>
+        ${conv.unread > 0 ? `<div class="unread-dot">${conv.unread > 99 ? '99+' : conv.unread}</div>` : ''}
+      </div>
+    `;
+    div.addEventListener('click', () => openConv(conv.id));
+    list.appendChild(div);
+  }
+}
+
+function openConv(convId) {
+  State.activeConv = convId;
+  const conv = State.conversations.get(convId);
+  if (!conv) return;
+  conv.unread = 0;
+  $('chatTitle').textContent = conv.name + (conv.type === 'group' ? ' (' + (State.users.size + 1) + '人)' : '');
+  $('mainPage').classList.add('show-chat');
+  renderMsgList();
+  renderConvList();
+  scrollToBottom();
+}
+
+function renderMsgList() {
+  const conv = State.conversations.get(State.activeConv);
+  const box = $('msgList');
+  box.innerHTML = '';
+  if (!conv) return;
+  let lastTs = 0;
+  for (const m of conv.messages) {
+    if (m.ts - lastTs > 5 * 60 * 1000) {
+      const t = document.createElement('div');
+      t.className = 'msg-time';
+      t.textContent = formatTime(m.ts);
+      box.appendChild(t);
+    }
+    lastTs = m.ts;
+    box.appendChild(buildMsgRow(m));
+  }
+}
+
+function appendMsgDom(m) {
+  const box = $('msgList');
+  // 时间分隔
+  const last = box.lastElementChild;
+  const lastTs = last && last._ts ? last._ts : 0;
+  if (m.ts - lastTs > 5 * 60 * 1000) {
+    const t = document.createElement('div');
+    t.className = 'msg-time';
+    t.textContent = formatTime(m.ts);
+    t._ts = m.ts;
+    box.appendChild(t);
+  }
+  const row = buildMsgRow(m);
+  row._ts = m.ts;
+  box.appendChild(row);
+}
+
+function buildMsgRow(m) {
+  const isSelf = m.from === State.userId;
+  const av = avatarOf(m.fromNickname || '');
+  const row = document.createElement('div');
+  row.className = 'msg-row' + (isSelf ? ' self' : '');
+
+  const avatarDiv = document.createElement('div');
+  avatarDiv.className = 'msg-avatar ' + av.color;
+  avatarDiv.textContent = av.ch;
+  // 群聊点击对方头像 -> 私聊
+  if (!isSelf && State.activeConv === 'group') {
+    avatarDiv.style.cursor = 'pointer';
+    avatarDiv.addEventListener('click', () => {
+      ensureConv(m.from, 'private', m.fromNickname);
+      openConv(m.from);
+    });
+  }
+  row.appendChild(avatarDiv);
+
+  const content = document.createElement('div');
+  content.className = 'msg-content';
+  if (!isSelf && State.activeConv === 'group') {
+    const nick = document.createElement('div');
+    nick.className = 'msg-nickname';
+    nick.textContent = m.fromNickname || '';
+    content.appendChild(nick);
+  }
+  const bubble = document.createElement('div');
+  if (m.msgType === 'image') {
+    bubble.className = 'msg-bubble image-bubble';
+    const img = document.createElement('img');
+    img.src = m.content;
+    img.addEventListener('click', () => {
+      $('viewerImg').src = m.content;
+      $('imageViewer').style.display = 'flex';
+    });
+    bubble.appendChild(img);
+  } else {
+    bubble.className = 'msg-bubble';
+    bubble.textContent = m.content || '';
+  }
+  content.appendChild(bubble);
+  row.appendChild(content);
+  return row;
+}
+
+function scrollToBottom() {
+  const box = $('msgList');
+  requestAnimationFrame(() => {
+    box.scrollTop = box.scrollHeight;
+  });
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  const now = new Date();
+  const same = d.toDateString() === now.toDateString();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  if (same) return `${hh}:${mm}`;
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${m}-${dd} ${hh}:${mm}`;
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[c]);
+}
+
+// ---------- 图片压缩 ----------
+async function compressImage(file, maxBytes = 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        const MAX_DIM = 1600;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        let q = 0.85;
+        let dataUrl = canvas.toDataURL('image/jpeg', q);
+        // base64 字节估算 ≈ length * 0.75
+        while (dataUrl.length * 0.75 > maxBytes && q > 0.3) {
+          q -= 0.1;
+          dataUrl = canvas.toDataURL('image/jpeg', q);
+        }
+        // 还是太大，缩尺寸
+        let scale = 0.9;
+        while (dataUrl.length * 0.75 > maxBytes && scale > 0.3) {
+          const c2 = document.createElement('canvas');
+          c2.width = Math.round(width * scale);
+          c2.height = Math.round(height * scale);
+          c2.getContext('2d').drawImage(img, 0, 0, c2.width, c2.height);
+          dataUrl = c2.toDataURL('image/jpeg', 0.7);
+          scale -= 0.1;
+        }
+        resolve(dataUrl);
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ---------- 事件绑定 ----------
+function bindEvents() {
+  $('loginBtn').addEventListener('click', doLogin);
+  $('roomInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') doLogin(); });
+
+  $('backBtn').addEventListener('click', () => {
+    $('mainPage').classList.remove('show-chat');
+    State.activeConv = null;
+    renderConvList();
+  });
+
+  $('sendBtn').addEventListener('click', onSendClick);
+  $('msgInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSendClick();
+    }
+  });
+  $('msgInput').addEventListener('input', (e) => {
+    const ta = e.target;
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+  });
+
+  $('imageBtn').addEventListener('click', () => $('imageInput').click());
+  $('imageInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      showToast('压缩图片中...');
+      const dataUrl = await compressImage(file);
+      await sendMessage('image', dataUrl);
+    } catch (err) {
+      showToast('图片处理失败');
+    } finally {
+      e.target.value = '';
+    }
+  });
+
+  $('callBtn').addEventListener('click', () => {
+    if (!State.activeConv) return;
+    const conv = State.conversations.get(State.activeConv);
+    if (!conv) return;
+    if (conv.type === 'group') startCall('group');
+    else startCall('private', conv.id);
+  });
+
+  $('micBtn').addEventListener('click', toggleMic);
+  $('hangupBtn').addEventListener('click', endCall);
+  $('acceptBtn').addEventListener('click', acceptInvite);
+  $('rejectBtn').addEventListener('click', rejectInvite);
+
+  $('imageViewer').addEventListener('click', () => {
+    $('imageViewer').style.display = 'none';
+  });
+}
+
+async function onSendClick() {
+  const ta = $('msgInput');
+  const text = ta.value.trim();
+  if (!text) return;
+  if (!State.activeConv) { showToast('请先选择会话'); return; }
+  ta.value = '';
+  ta.style.height = 'auto';
+  await sendMessage('text', text);
+}
+
+async function doLogin() {
+  const nickname = $('nicknameInput').value.trim();
+  const room = $('roomInput').value.trim();
+  if (!nickname) { showToast('请输入昵称'); return; }
+  if (!/^[A-Za-z0-9]{6}$/.test(room)) { showToast('邀请码必须是 6 位字母或数字'); return; }
+  $('loginBtn').disabled = true;
+  try {
+    State.nickname = nickname;
+    State.roomId = room;
+    State.roomKey = await deriveRoomKey(room);
+    State.ecdhKeyPair = await genECDHKeyPair();
+    State.pubKeyB64 = await exportPubKey(State.ecdhKeyPair);
+    $('loginPage').style.display = 'none';
+    $('mainPage').style.display = 'flex';
+    $('roomTag').textContent = '#' + room;
+    $('sidebarTitle').textContent = nickname;
+    ensureConv('group', 'group', '群聊房间');
+    renderConvList();
+    connect();
+  } catch (e) {
+    showToast('初始化失败：' + e.message);
+    $('loginBtn').disabled = false;
+  }
+}
+
+// ---------- 启动 ----------
+bindEvents();
+
+// 防止移动端键盘弹起后视图错位
+window.addEventListener('resize', () => {
+  if (State.activeConv) scrollToBottom();
+});
+
+// 页面关闭时清理
+window.addEventListener('beforeunload', () => {
+  if (State.call) endCall();
+  if (State.ws) try { State.ws.close(); } catch (_) {}
+});
+</script>
+</body>
+</html>
