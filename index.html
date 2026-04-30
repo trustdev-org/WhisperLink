@@ -29,68 +29,181 @@ img { display: block; max-width: 100%; }
 /* ============= 登录页 ============= */
 .login-page {
   position: absolute; inset: 0;
-  background: linear-gradient(160deg, #07c160 0%, #06ad56 100%);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(120,255,180,0.35), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(64,160,255,0.25), transparent 55%),
+    linear-gradient(160deg, #0a3d2e 0%, #0a1a26 100%);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 24px;
   z-index: 10;
+  overflow-y: auto;
 }
 .login-logo {
-  width: 88px; height: 88px; border-radius: 22px;
-  background: rgba(255,255,255,0.2);
+  width: 84px; height: 84px; border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.18);
   display: flex; align-items: center; justify-content: center;
-  font-size: 44px; color: #fff; margin-bottom: 18px;
-  backdrop-filter: blur(10px);
+  font-size: 42px; color: #fff; margin-bottom: 16px;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
 }
-.login-title { color: #fff; font-size: 28px; font-weight: 600; margin: 0 0 6px; }
-.login-subtitle { color: rgba(255,255,255,0.85); font-size: 14px; margin-bottom: 36px; }
+.login-title {
+  color: #fff; font-size: 30px; font-weight: 700; margin: 0 0 6px;
+  letter-spacing: 0.5px;
+}
+.login-subtitle {
+  color: rgba(255,255,255,0.75); font-size: 13px; margin-bottom: 28px;
+  letter-spacing: 1px;
+}
 .login-card {
-  width: 100%; max-width: 360px;
-  background: #fff; border-radius: 14px; padding: 22px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  width: 100%; max-width: 380px;
+  background: rgba(255,255,255,0.97);
+  border-radius: 18px; padding: 22px 22px 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
-.login-field { margin-bottom: 16px; }
-.login-field label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; }
+.login-field { margin-bottom: 14px; }
+.login-field label {
+  display: block; font-size: 12px; color: #6b7280;
+  margin-bottom: 6px; font-weight: 500;
+  letter-spacing: 0.3px;
+}
 .login-field input {
   width: 100%; padding: 12px 14px;
-  border: 1px solid #e5e5e5; border-radius: 8px;
-  font-size: 16px; outline: none;
-  transition: border-color .2s;
+  border: 1.5px solid #e5e7eb; border-radius: 10px;
+  font-size: 15px; outline: none;
+  background: #f9fafb;
+  transition: border-color .2s, background .2s;
 }
-.login-field input:focus { border-color: #07c160; }
+.login-field input:focus { border-color: #07c160; background: #fff; }
 .login-input-row { display: flex; gap: 8px; align-items: stretch; }
 .login-input-row input { flex: 1; }
 .dice-btn {
-  width: 44px; flex-shrink: 0;
-  border: 1px solid #e5e5e5;
-  background: #f7f7f7;
-  border-radius: 6px;
+  width: 46px; flex-shrink: 0;
+  border: 1.5px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 10px;
   font-size: 18px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  color: #555;
+  color: #6b7280;
+  transition: all .15s;
 }
-.dice-btn:active { background: #e5e5e5; }
-.login-field select {
-  width: 100%;
+.dice-btn:hover { background: #fff; border-color: #07c160; color: #07c160; }
+.dice-btn:active { transform: scale(0.95); }
+
+/* Tab 切换 */
+.login-tabs {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 14px;
+  gap: 2px;
+}
+.login-tab {
+  flex: 1; padding: 9px 0;
+  font-size: 13px; font-weight: 500;
+  color: #6b7280;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+.login-tab.active {
+  background: #fff; color: #111827;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.login-tab .badge {
+  display: inline-block;
+  background: #07c160; color: #fff;
+  font-size: 10px; font-weight: 600;
+  padding: 1px 6px; border-radius: 8px;
+  margin-left: 4px;
+  vertical-align: 1px;
+}
+.login-tab:not(.active) .badge { background: #d1d5db; color: #fff; }
+
+/* 历史频道列表 */
+.channel-list {
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0 -4px 6px;
+  padding: 0 4px;
+}
+.channel-item {
+  display: flex; align-items: center;
   padding: 11px 12px;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
-  font-size: 16px;
-  background: #fff;
-  outline: none;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
   margin-bottom: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: all .15s;
 }
-.login-field select:focus { border-color: #07c160; }
-.login-field-hint { font-size: 11px; color: #aaa; margin-top: 4px; }
+.channel-item:hover {
+  border-color: #07c160;
+  background: #f0fdf4;
+}
+.channel-item .ch-icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 14px; font-weight: 600;
+  flex-shrink: 0; margin-right: 10px;
+}
+.channel-item .ch-info { flex: 1; min-width: 0; }
+.channel-item .ch-name {
+  font-size: 14px; font-weight: 600;
+  color: #111827;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.channel-item .ch-time {
+  font-size: 11px; color: #9ca3af; margin-top: 2px;
+}
+.channel-item .ch-del {
+  width: 28px; height: 28px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: #9ca3af; font-size: 16px;
+  flex-shrink: 0;
+}
+.channel-item .ch-del:hover { background: #fee2e2; color: #ef4444; }
+.channel-list-empty {
+  text-align: center; padding: 28px 12px;
+  color: #9ca3af; font-size: 13px;
+}
+
+.login-field-hint {
+  font-size: 11px; color: #9ca3af; margin-top: 6px;
+  line-height: 1.5;
+}
 .login-btn {
   width: 100%; padding: 13px;
-  background: #07c160; color: #fff;
-  border-radius: 8px; font-size: 16px; font-weight: 500;
-  transition: opacity .2s;
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  color: #fff;
+  border-radius: 10px; font-size: 15px; font-weight: 600;
+  transition: all .2s;
+  box-shadow: 0 4px 14px rgba(7,193,96,0.35);
+  letter-spacing: 0.5px;
 }
-.login-btn:active { opacity: .8; }
-.login-btn:disabled { opacity: .5; }
-.login-tip { margin-top: 14px; font-size: 12px; color: #999; text-align: center; line-height: 1.6; }
+.login-btn:hover { box-shadow: 0 6px 20px rgba(7,193,96,0.45); }
+.login-btn:active { transform: scale(0.98); }
+.login-btn:disabled { opacity: .5; box-shadow: none; }
+.login-tip {
+  margin-top: 16px; font-size: 11px; color: #fff;
+  text-align: center; line-height: 1.7;
+  opacity: 0.6;
+}
+.login-tip kbd {
+  background: rgba(255,255,255,0.15);
+  padding: 1px 5px; border-radius: 3px;
+  font-family: inherit; font-size: 10px;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
 
 /* ============= 主界面 ============= */
 .main {
@@ -104,34 +217,62 @@ img { display: block; max-width: 100%; }
   max-width: 100%;
   background: #fff;
   display: flex; flex-direction: column;
-  border-right: 1px solid #e5e5e5;
+  border-right: 1px solid #e5e7eb;
 }
 .sidebar-header {
-  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px;
-  background: #ededed;
-  border-bottom: 1px solid #e5e5e5;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 14px;
+  background: linear-gradient(180deg, #fafafa 0%, #f3f4f6 100%);
+  border-bottom: 1px solid #e5e7eb;
   display: flex; justify-content: space-between; align-items: center;
+  gap: 8px;
 }
-.sidebar-header h1 { font-size: 17px; font-weight: 600; margin: 0; }
+.sidebar-header h1 {
+  font-size: 17px; font-weight: 600; margin: 0;
+  color: #111827;
+  flex-shrink: 0;
+  max-width: 50%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sidebar-header .header-actions {
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+}
 .sidebar-header .room-tag {
-  font-size: 12px; color: #888;
-  background: #f5f5f5; padding: 3px 8px; border-radius: 4px;
+  font-size: 12px; color: #07c160;
+  background: rgba(7,193,96,0.1);
+  padding: 4px 10px; border-radius: 999px;
+  font-weight: 500;
+  max-width: 140px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.sidebar-header .icon-btn {
+  width: 32px; height: 32px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #6b7280;
+  cursor: pointer;
+  transition: all .15s;
+}
+.sidebar-header .icon-btn:hover { background: rgba(0,0,0,0.06); color: #111827; }
+.sidebar-header .icon-btn.muted { color: #9ca3af; }
 .conv-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .conv-item {
   display: flex; align-items: center; padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f3f4f6;
   position: relative;
   transition: background .15s;
+  cursor: pointer;
 }
-.conv-item:active { background: #f5f5f5; }
-.conv-item.active { background: #ececec; }
+.conv-item:hover { background: #f9fafb; }
+.conv-item:active { background: #f3f4f6; }
+.conv-item.active { background: #f0fdf4; }
 .conv-avatar {
-  width: 44px; height: 44px; border-radius: 6px;
+  width: 44px; height: 44px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 18px; font-weight: 500;
+  color: #fff; font-size: 17px; font-weight: 600;
   margin-right: 12px; flex-shrink: 0;
   position: relative;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 .conv-info { flex: 1; min-width: 0; }
 .conv-name { font-size: 16px; font-weight: 500; color: #191919; margin-bottom: 4px; }
@@ -155,23 +296,33 @@ img { display: block; max-width: 100%; }
 .chat-header {
   display: flex; align-items: center;
   padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px 10px;
-  background: #ededed;
-  border-bottom: 1px solid #d8d8d8;
+  background: linear-gradient(180deg, #fafafa 0%, #f3f4f6 100%);
+  border-bottom: 1px solid #e5e7eb;
   position: relative;
   z-index: 5;
+  gap: 4px;
 }
 .back-btn {
-  width: 32px; height: 32px;
+  width: 36px; height: 36px;
+  border-radius: 18px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px; color: #191919;
-  margin-right: 4px;
+  font-size: 22px; color: #111827;
+  transition: background .15s;
 }
-.chat-title { flex: 1; text-align: center; font-size: 17px; font-weight: 600; }
+.back-btn:hover { background: rgba(0,0,0,0.06); }
+.chat-title {
+  flex: 1; text-align: center; font-size: 16px; font-weight: 600;
+  color: #111827;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .chat-action {
   width: 36px; height: 36px;
+  border-radius: 18px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: #191919;
+  font-size: 18px; color: #6b7280;
+  transition: all .15s;
 }
+.chat-action:hover { background: rgba(0,0,0,0.06); color: #111827; }
 
 /* 消息区 */
 .msg-list {
@@ -433,27 +584,37 @@ img { display: block; max-width: 100%; }
       <div class="login-field">
         <label>昵称</label>
         <div class="login-input-row">
-          <input id="nicknameInput" type="text" maxlength="16" placeholder="请输入昵称" />
+          <input id="nicknameInput" type="text" maxlength="16" placeholder="给自己起个名字" />
           <button type="button" class="dice-btn" id="randomNickBtn" title="随机生成昵称">🎲</button>
         </div>
       </div>
-      <div class="login-field" id="channelSelectField" style="display:none;">
-        <label>历史频道（点击切换）</label>
-        <select id="channelSelect"></select>
+
+      <div class="login-tabs" id="loginTabs">
+        <div class="login-tab active" data-tab="new">新建 / 加入</div>
+        <div class="login-tab" data-tab="history">历史频道<span class="badge" id="historyBadge">0</span></div>
       </div>
-      <div class="login-field">
-        <label>频道（4-32 位字母或数字，相同频道进入同一房间）</label>
-        <div class="login-input-row">
-          <input id="roomInput" type="text" maxlength="32" placeholder="例如 a8k2xq 或留空随机生成" autocapitalize="off" autocorrect="off" />
-          <button type="button" class="dice-btn" id="randomRoomBtn" title="随机生成 12 位频道">🎲</button>
+
+      <!-- 新建 / 加入 -->
+      <div class="tab-panel active" id="tabPanelNew">
+        <div class="login-field">
+          <label>频道码（4–32 位字母或数字）</label>
+          <div class="login-input-row">
+            <input id="roomInput" type="text" maxlength="32" placeholder="留空将自动生成" autocapitalize="off" autocorrect="off" />
+            <button type="button" class="dice-btn" id="randomRoomBtn" title="随机生成 12 位频道">🎲</button>
+          </div>
+          <div class="login-field-hint">把同一个频道码分享给好友，即可一起加密聊天。</div>
         </div>
-        <div class="login-field-hint">分享相同频道号即可一起加密聊天</div>
+        <button class="login-btn" id="loginBtn">进入聊天室</button>
       </div>
-      <button class="login-btn" id="loginBtn">进入聊天室</button>
-      <div class="login-tip">
-        所有消息端到端加密<br/>
-        服务端不存储任何聊天记录
+
+      <!-- 历史频道 -->
+      <div class="tab-panel" id="tabPanelHistory">
+        <div class="channel-list" id="channelList"></div>
       </div>
+    </div>
+    <div class="login-tip">
+      🔒 端到端加密 · 服务端不存储任何聊天记录<br/>
+      <kbd>Enter</kbd> 提交 · <kbd>🎲</kbd> 随机生成
     </div>
   </div>
 
@@ -463,7 +624,11 @@ img { display: block; max-width: 100%; }
     <div class="sidebar">
       <div class="sidebar-header">
         <h1 id="sidebarTitle">聊天</h1>
-        <span class="room-tag" id="roomTag"></span>
+        <div class="header-actions">
+          <span class="room-tag" id="roomTag"></span>
+          <button class="icon-btn" id="soundToggle" title="提示音开/关">🔔</button>
+          <button class="icon-btn" id="leaveBtn" title="退出频道">⏻</button>
+        </div>
       </div>
       <div class="conv-list" id="convList"></div>
     </div>
@@ -655,6 +820,7 @@ const State = {
   activeConv: null,
   call: null, // { channel, peers: Map<userId, RTCPeerConnection>, localStream, isMuted, target? }
   turnConfig: null,
+  muted: false,
 };
 
 // ---------- WebSocket ----------
@@ -819,6 +985,10 @@ function recvMessage(convId, m) {
   if (State.activeConv === conv.id) {
     appendMsgDom(m);
     scrollToBottom();
+  }
+  // 收到他人消息且不在该会话焦点 → 提示音
+  if (m.from && m.from !== State.userId && shouldNotifyFor(conv.id)) {
+    playBeep();
   }
 }
 
@@ -1370,7 +1540,7 @@ async function compressImage(file, maxBytes = 1024 * 1024) {
 }
 
 // ---------- 本地存储 / 随机生成 ----------
-const LS_KEYS = { nick: 'wl_nickname', channels: 'wl_channels' };
+const LS_KEYS = { nick: 'wl_nickname', channels: 'wl_channels', muted: 'wl_muted' };
 const ALNUM = 'abcdefghijklmnopqrstuvwxyz0123456789';
 function randomAlnum(len) {
   const arr = new Uint32Array(len);
@@ -1384,18 +1554,29 @@ function randomNickname() {
   const nouns = ['旅人','信使','观察者','低语','信号','节点','星辰','码农','客人','侦察兵','飞鸟','潜行者'];
   return adjs[Math.floor(Math.random()*adjs.length)] + nouns[Math.floor(Math.random()*nouns.length)] + randomAlnum(3);
 }
+// 频道存储格式：[{ id, ts }] 兼容旧格式（字符串数组）
 function loadStoredChannels() {
   try {
     const raw = localStorage.getItem(LS_KEYS.channels);
     if (!raw) return [];
     const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr.filter(c => /^[A-Za-z0-9]{4,32}$/.test(c)) : [];
+    if (!Array.isArray(arr)) return [];
+    const now = Date.now();
+    return arr.map(x => {
+      if (typeof x === 'string') return { id: x, ts: now };
+      if (x && typeof x.id === 'string') return { id: x.id, ts: x.ts || now };
+      return null;
+    }).filter(c => c && /^[A-Za-z0-9]{4,32}$/.test(c.id));
   } catch (_) { return []; }
 }
-function saveChannel(channel) {
-  const list = loadStoredChannels().filter(c => c !== channel);
-  list.unshift(channel);
-  while (list.length > 20) list.pop();
+function saveChannel(channelId) {
+  const list = loadStoredChannels().filter(c => c.id !== channelId);
+  list.unshift({ id: channelId, ts: Date.now() });
+  while (list.length > 30) list.pop();
+  try { localStorage.setItem(LS_KEYS.channels, JSON.stringify(list)); } catch (_) {}
+}
+function deleteStoredChannel(channelId) {
+  const list = loadStoredChannels().filter(c => c.id !== channelId);
   try { localStorage.setItem(LS_KEYS.channels, JSON.stringify(list)); } catch (_) {}
 }
 function getUrlChannel() {
@@ -1427,47 +1608,179 @@ async function shareChannel() {
     prompt('复制以下链接分享给好友：', url);
   }
 }
+function timeAgo(ts) {
+  const d = Date.now() - ts;
+  if (d < 60000) return '刚刚';
+  if (d < 3600000) return Math.floor(d/60000) + ' 分钟前';
+  if (d < 86400000) return Math.floor(d/3600000) + ' 小时前';
+  if (d < 86400000*7) return Math.floor(d/86400000) + ' 天前';
+  const dt = new Date(ts);
+  return `${dt.getMonth()+1}月${dt.getDate()}日`;
+}
+function channelColorClass(id) {
+  let h = 0; for (let i = 0; i < id.length; i++) h = (h*31 + id.charCodeAt(i)) >>> 0;
+  return 'avatar-c' + (h % 8);
+}
+function renderHistoryChannelList() {
+  const list = loadStoredChannels();
+  $('historyBadge').textContent = list.length;
+  const box = $('channelList');
+  box.innerHTML = '';
+  if (list.length === 0) {
+    box.innerHTML = '<div class="channel-list-empty">暂无历史频道<br/>加入或新建一个频道开始聊天</div>';
+    return;
+  }
+  for (const c of list) {
+    const item = document.createElement('div');
+    item.className = 'channel-item';
+    item.innerHTML = `
+      <div class="ch-icon ${channelColorClass(c.id)}">#</div>
+      <div class="ch-info">
+        <div class="ch-name">${escapeHtml(c.id)}</div>
+        <div class="ch-time">上次进入：${timeAgo(c.ts)}</div>
+      </div>
+      <button type="button" class="ch-del" title="从历史中移除" data-del="${escapeHtml(c.id)}">×</button>
+    `;
+    item.addEventListener('click', (e) => {
+      if (e.target.dataset && e.target.dataset.del) {
+        e.stopPropagation();
+        deleteStoredChannel(e.target.dataset.del);
+        renderHistoryChannelList();
+        return;
+      }
+      $('roomInput').value = c.id;
+      doLogin();
+    });
+    box.appendChild(item);
+  }
+}
+function switchLoginTab(name) {
+  document.querySelectorAll('.login-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === name);
+  });
+  $('tabPanelNew').classList.toggle('active', name === 'new');
+  $('tabPanelHistory').classList.toggle('active', name === 'history');
+}
 function prefillLogin() {
   // 昵称
   try {
     const nick = localStorage.getItem(LS_KEYS.nick);
     if (nick) $('nicknameInput').value = nick;
   } catch (_) {}
-  // 频道下拉
+  // 是否静音
+  try {
+    State.muted = localStorage.getItem(LS_KEYS.muted) === '1';
+    $('soundToggle').textContent = State.muted ? '🔕' : '🔔';
+    $('soundToggle').classList.toggle('muted', State.muted);
+  } catch (_) {}
+
   const channels = loadStoredChannels();
-  const sel = $('channelSelect');
-  if (channels.length > 0) {
-    $('channelSelectField').style.display = '';
-    sel.innerHTML = '';
-    for (const c of channels) {
-      const o = document.createElement('option');
-      o.value = c; o.textContent = c;
-      sel.appendChild(o);
-    }
-    sel.value = channels[0];
-    sel.addEventListener('change', () => { $('roomInput').value = sel.value; });
-  }
-  // 频道：URL 优先，其次历史最新
   const urlCh = getUrlChannel();
+  renderHistoryChannelList();
+
+  // 决定默认 Tab：URL 有频道码 → 新建/加入并预填；否则有历史 → 历史；否则 新建
   if (urlCh) {
     $('roomInput').value = urlCh;
-    if (channels.includes(urlCh)) sel.value = urlCh;
+    switchLoginTab('new');
   } else if (channels.length > 0) {
-    $('roomInput').value = channels[0];
+    switchLoginTab('history');
+  } else {
+    switchLoginTab('new');
+    // 默认建议一个随机频道码方便直接点进入
+    if (!$('roomInput').value) $('roomInput').value = randomAlnum(12);
   }
+}
+
+// ---------- 提示音 ----------
+let _audioCtx = null;
+let _lastBeep = 0;
+function ensureAudioCtx() {
+  if (_audioCtx) return _audioCtx;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (Ctx) _audioCtx = new Ctx();
+  } catch (_) {}
+  return _audioCtx;
+}
+function playBeep() {
+  if (State.muted) return;
+  const now = Date.now();
+  if (now - _lastBeep < 800) return; // 节流
+  _lastBeep = now;
+  const ctx = ensureAudioCtx();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') { try { ctx.resume(); } catch (_) {} }
+  try {
+    const t = ctx.currentTime;
+    const playTone = (freq, start, dur) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t + start);
+      gain.gain.exponentialRampToValueAtTime(0.18, t + start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + start + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t + start);
+      osc.stop(t + start + dur + 0.02);
+    };
+    playTone(880, 0, 0.09);
+    playTone(1320, 0.10, 0.13);
+  } catch (_) {}
+}
+function shouldNotifyFor(convId) {
+  // 页面失焦 → 通知；或者当前活动会话不是该会话 → 通知
+  if (document.hidden || !document.hasFocus()) return true;
+  if (State.activeConv !== convId) return true;
+  return false;
+}
+function toggleMute() {
+  State.muted = !State.muted;
+  $('soundToggle').textContent = State.muted ? '🔕' : '🔔';
+  $('soundToggle').classList.toggle('muted', State.muted);
+  try { localStorage.setItem(LS_KEYS.muted, State.muted ? '1' : '0'); } catch (_) {}
+  if (!State.muted) {
+    // 解锁 audio context
+    const ctx = ensureAudioCtx();
+    if (ctx && ctx.state === 'suspended') try { ctx.resume(); } catch (_) {}
+    showToast('提示音已开启');
+  } else {
+    showToast('提示音已关闭');
+  }
+}
+function leaveRoom() {
+  if (!confirm('确定退出当前频道？')) return;
+  if (State.call) try { endCall(); } catch (_) {}
+  if (State.ws) try { State.ws.close(); } catch (_) {}
+  // 清除 URL 参数
+  try {
+    const u = new URL(location.href);
+    u.searchParams.delete('c');
+    u.searchParams.delete('channel');
+    history.replaceState(null, '', u.toString());
+  } catch (_) {}
+  location.reload();
 }
 
 // ---------- 事件绑定 ----------
 function bindEvents() {
   $('loginBtn').addEventListener('click', doLogin);
   $('roomInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') doLogin(); });
+  $('nicknameInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') doLogin(); });
   $('randomNickBtn').addEventListener('click', () => {
     $('nicknameInput').value = randomNickname();
   });
   $('randomRoomBtn').addEventListener('click', () => {
     $('roomInput').value = randomAlnum(12);
   });
+  // 登录页 Tab 切换
+  document.querySelectorAll('.login-tab').forEach(t => {
+    t.addEventListener('click', () => switchLoginTab(t.dataset.tab));
+  });
+
   $('shareBtn').addEventListener('click', shareChannel);
+  $('soundToggle').addEventListener('click', toggleMute);
+  $('leaveBtn').addEventListener('click', leaveRoom);
 
   $('backBtn').addEventListener('click', () => {
     $('mainPage').classList.remove('show-chat');
@@ -1537,6 +1850,8 @@ async function doLogin() {
   if (!nickname) { showToast('请输入昵称'); return; }
   if (!/^[A-Za-z0-9]{4,32}$/.test(room)) { showToast('频道必须是 4-32 位字母或数字'); return; }
   $('loginBtn').disabled = true;
+  // 解锁 AudioContext（必须在用户手势中）
+  try { const ctx = ensureAudioCtx(); if (ctx && ctx.state === 'suspended') await ctx.resume(); } catch (_) {}
   try {
     State.nickname = nickname;
     State.roomId = room;
